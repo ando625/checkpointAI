@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Report;
 use App\Models\Comment;
+use App\Models\Notification;
 use App\Http\Requests\CommentRequest;
 
 class CommentController extends Controller
@@ -15,6 +16,15 @@ class CommentController extends Controller
             'user_id' => $request->user()->id,
             'comment_body' => $request->comment_body,
         ]);
+
+        //通知を作成する　自分の報告にコメントした場合は通知しない
+        if($report->user_id !== $request->user()->id){
+            Notification::create([
+                'user_id' => $report->user_id,
+                'report_id' => $report->id,
+                'comment_id' => $comment->id,
+            ]);
+        }
 
         $comment->load('user');
 

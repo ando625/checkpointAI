@@ -51,7 +51,9 @@ export function StatusBadge({ status }: { status: ReportStatus }) {
         要確認: 'text-amber-600 bg-amber-50 border-amber-200',
     };
     return (
-        <span className={`px-5.5 py-2 rounded-full font-medium border ${styles[status]}`}>
+        <span
+            className={`px-5.5 py-2 rounded-full font-medium border whitespace-nowrap ${styles[status]}`}
+        >
             {status}
         </span>
     );

@@ -37,7 +37,7 @@ export default function MyPage() {
         <div className="min-h-screen bg-slate-50">
             <Navbar />
 
-            <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+            <main className="max-w-5xl mx-auto px-3 md:px-6 py-8 space-y-8">
                 <div className="flex items-center gep-2">
                                     <div className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center">
                                         <User className="w-5 h-5 text-white" />

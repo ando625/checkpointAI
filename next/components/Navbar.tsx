@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react'; // 追加
+import { useState, useEffect, useRef } from 'react'; // 追加
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from './ReportUI';
 import {
@@ -13,14 +13,87 @@ import {
     X,
 } from 'lucide-react'; // Menu, X を追加
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import axios from '@/lib/axios';
+
+//通知一件の型定義
+type Notification = {
+    id: number;
+    report_id: number;
+    is_read: boolean;
+    created_at: string;
+    comment: {
+        comment_body: string;
+        user: {
+            name: string;
+        };
+    };
+};
 
 export function Navbar() {
     const { user, logout } = useAuth({ middleware: 'auth' });
     const pathname = usePathname();
+    const router = useRouter();
 
     // スマホ用メニューの開閉状態
     const [isOpen, setIsOpen] = useState(false);
+
+    //通知関連のstatus
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+    //ドロップダウンの外をクリックたらとじる
+    const notifRef = useRef<HTMLDivElement>(null);
+
+    //未読件数を定期的に取得する（3０秒ごと）
+    useEffect(() => {
+        if (!user) return;
+
+        const fetchUnreadCount = async () => {
+            const res = await axios.get('/api/notifications/unread-count'); // fetchからaxiosに変更
+            setUnreadCount(res.data.count);
+        };
+
+        fetchUnreadCount();
+        const timer = setInterval(fetchUnreadCount, 30000);
+        return () => clearInterval(timer);
+    }, [user]);
+
+    //ドロップダウンの外をクリックしたら閉じる
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (
+                notifRef.current &&
+                !notifRef.current.contains(e.target as Node)
+            ) {
+                setIsNotifOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () =>
+            document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    //ベルアイコンをクリックした時通知一覧を取得してドロップダウンを開く
+    const handleBellClick = async () => {
+        const res = await axios.get('/api/notifications'); // fetchからaxiosに変更
+        console.log('通知データ:', res.data); // ← 追加
+        console.log('isNotifOpen:', !isNotifOpen);  
+        setNotifications(res.data); // axiosはres.dataでデータが取れる
+        setIsNotifOpen((prev) => !prev);
+    };
+
+
+    // 通知をクリックしたとき：既読にして報告書ページに飛ぶ
+    const handleNotifClick = async (notif: Notification) => {
+        await axios.put(`/api/notifications/${notif.id}/read`); // fetchからaxiosに変更
+
+        setNotifications((prev) => prev.filter((n) => n.id !== notif.id));
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+        setIsNotifOpen(false);
+        window.location.href = `/dashboard?report_id=${notif.report_id}`;
+    };
 
     const navItems = [
         { href: '/dashboard', label: 'ホーム', icon: LayoutDashboard },
@@ -64,9 +137,64 @@ export function Navbar() {
 
                 {/* 右側エリア */}
                 <div className="flex items-center gap-2 md:gap-4">
-                    <button className="p-2 text-slate-400 hover:bg-slate-100 rounded-full">
-                        <Bell className="w-5 h-5" />
-                    </button>
+                    {/* ベルアイコン＋ドロップダウン */}
+                    <div className="relative" ref={notifRef}>
+                        <button
+                            className="p-2 text-slate-400 hover:bg-slate-100 rounded-full relative"
+                            onClick={handleBellClick}
+                        >
+                            <Bell className="w-5 h-5" />
+                            {/* 未読バッジ：右上に配置 */}
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            )}
+                        </button>
+
+                        {/* 通知ドロップダウン */}
+                        {isNotifOpen && (
+                            <div className="absolute -right-16 md:right-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-lg z-50">
+                                <div className="px-4 py-3 border-b border-slate-100 font-semibold text-slate-700">
+                                    通知
+                                </div>
+                                {notifications.length === 0 ? (
+                                    <div className="px-4 py-6 text-center text-slate-400 text-sm">
+                                        通知はありません
+                                    </div>
+                                ) : (
+                                    <ul>
+                                        {notifications.map((notif) => (
+                                            <li
+                                                key={notif.id}
+                                                onClick={() =>
+                                                    handleNotifClick(notif)
+                                                }
+                                                className={`px-4 py-3 cursor-pointer hover:bg-slate-50 border-b border-slate-100 last:border-0 ${
+                                                    !notif.is_read
+                                                        ? 'bg-blue-50'
+                                                        : ''
+                                                }`}
+                                            >
+                                                <p className="text-sm text-slate-700">
+                                                    <span className="font-semibold">
+                                                        {
+                                                            notif.comment.user
+                                                                .name
+                                                        }
+                                                    </span>
+                                                    さんがコメントしました
+                                                </p>
+                                                <p className="text-xs text-slate-400 mt-0.5 truncate">
+                                                    {notif.comment.comment_body}
+                                                </p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
                     {/* PC用ユーザー情報 (md:以上で表示) */}
                     {user && (

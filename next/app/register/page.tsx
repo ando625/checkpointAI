@@ -5,27 +5,30 @@ import { FileText } from 'lucide-react';
 export default function RegisterPage() {
     return (
         <div>
-            <header className="flex items-center justify-between px-8 py-3 bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
+            <header className="flex items-center justify-between px-4 ms:px-8 py-3 bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
                 <div className="flex items-center gap-2">
                     <div className="bg-blue-600 p-1.5 rounded-lg">
-                        <FileText className="text-white w-6 h-6" />
+                        <FileText className="text-white w-5 h-5 sm:w-6 sm:y-6" />
                     </div>
                     <Link href="/">
-                        <span className="text-xl font-bold tracking-tight text-slate-800">
+                        <span className="text-lg sm:text-xl font-bold tracking-tight text-slate-800 hidden sm:block">
                             CheckPoint AI
+                        </span>
+                        <span className="text-lg font-bold tracking-tight text-slate-800 block sm:hidden">
+                            CP AI
                         </span>
                     </Link>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <Link
                         href="/login"
-                        className="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-blue-600 transition"
+                        className="px-2 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-blue-600 transition"
                     >
                         ログイン
                     </Link>
                     <Link
                         href="/register"
-                        className="px-5 py-2 text-sm font-semibold bg-slate-900 text-white rounded-full hover:bg-slate-800 transition shadow-md"
+                        className="px-3 sm:px-5 py-2 text-xs sm:text-sm font-semibold bg-slate-900 text-white rounded-full hover:bg-slate-800 transition shadow-md whitespace-normal"
                     >
                         新規会員登録
                     </Link>

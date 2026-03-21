@@ -62,7 +62,7 @@ export function PostForm({ onSubmit, isSubmitting, error }: PostFormProps) {
                 <button
                     onClick={handleSubmit}
                     disabled={cannotSubmit}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-slate-900 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-slate-900 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
                 >
                     <Send className="w-4 h-4" />
                     {/* 送信中かどうかでボタンのテキストを切り替え */}

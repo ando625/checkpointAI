@@ -22,6 +22,9 @@ import { ReportCard } from '@/components/ReportCard';
 import { Navbar } from '@/components/Navbar';
 import { Pagination } from '@/components/Pagination';
 import { LayoutDashboard } from 'lucide-react';
+import { useSearchParams } from 'next/navigation'; 
+import { useEffect } from 'react'; // ← 追加
+
 
 
 export default function DashboardPage() {
@@ -50,6 +53,29 @@ export default function DashboardPage() {
         return result !== null; //成功したらtrue、失敗したらfalse
     };
 
+    const searchParams = useSearchParams(); // URLのクエリパラメータを取得
+
+    // report_idがURLにあればそのカードにスクロール
+    useEffect(() => {
+        const reportId = searchParams.get('report_id'); // ?report_id=141 の141を取得
+        if (!reportId || isLoading) return;
+
+        // 少し待ってからスクロール（カードが描画されるのを待つ）
+        const timer = setTimeout(() => {
+            const el = document.getElementById(`report-${reportId}`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('ring-2', 'ring-blue-400'); // 青いハイライト
+                setTimeout(
+                    () => el.classList.remove('ring-2', 'ring-blue-400'),
+                    3000,
+                ); // 3秒後に消す
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchParams, isLoading]);
+
     // ユーザー情報がまだ読み込まれていない間は何も表示しない
     // （useAuthのリダイレクト処理が走る前に画面がチラつくのを防ぐ）
     if (!user) return null;
@@ -58,10 +84,10 @@ export default function DashboardPage() {
         <div className="min-h-screen bg-slate-50">
             <Navbar />
 
-            <main className="max-w-5xl mx-auto px-4 md:px-6 py-8 space-y-8 overflow-x-hidden">
+            <main className="max-w-5xl mx-auto px-4 md:px-6 py-8 space-y-8">
                 {/* ページタイトル */}
                 <div>
-                    <div className='flex items-center gep-2'>
+                    <div className="flex items-center gep-2">
                         <div className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center">
                             <LayoutDashboard className="w-5 h-5 text-white" />
                         </div>
@@ -93,14 +119,15 @@ export default function DashboardPage() {
                             </div>
                         ) : (
                             reports.map((report) => (
-                                <ReportCard
-                                    key={report.id}
-                                    report={report}
-                                    currentUserId={user.id}
-                                    onDeleteReport={deleteReport}
-                                    onSubmitComment={submitComment}
-                                    onDeleteComment={deleteComment}
-                                />
+                                <div id={`report-${report.id}`} key={report.id}>
+                                    <ReportCard
+                                        report={report}
+                                        currentUserId={user.id}
+                                        onDeleteReport={deleteReport}
+                                        onSubmitComment={submitComment}
+                                        onDeleteComment={deleteComment}
+                                    />
+                                </div>
                             ))
                         )}
 

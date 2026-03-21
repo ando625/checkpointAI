@@ -3,6 +3,7 @@
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\MypageController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ReportController;
@@ -49,6 +50,15 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::get('/analytics/status', [AnalyticsController::class, 'status']);
 
     Route::get('/analytics/ai-insights', [AnalyticsController::class, 'aiInsights']);
+
+    // 通知：未読件数
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+
+    // 通知：一覧取得
+    Route::get('/notifications', [NotificationController::class, 'index']);
+
+    // 通知：１件既読にする
+    Route::put('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
 
 
 
