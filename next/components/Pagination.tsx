@@ -9,6 +9,17 @@ interface PaginationProps {
 
 export function Pagination({ currentPage, lastPage, total, onPageChange }: PaginationProps) {
 
+    //スクロール処理を含めたハンドラーを作成
+    const handlePageChange = (page: number) => {
+        onPageChange(page);
+
+        //画面最上部へスクロールさせる
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    };
+
 
     return (
         <div className="flex items-center justify-center py-4 gap-2">
@@ -19,7 +30,7 @@ export function Pagination({ currentPage, lastPage, total, onPageChange }: Pagin
             <div className="flex items-center gap-2">
                 {/* 前へボタン */}
                 <button
-                    onClick={() => onPageChange(currentPage - 1)}
+                    onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                     className="px-3 py-1 rounded-lg border border-slate-400 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
@@ -33,7 +44,7 @@ export function Pagination({ currentPage, lastPage, total, onPageChange }: Pagin
 
                 {/* 次へのボタン */}
                 <button
-                    onClick={() => onPageChange(currentPage + 1)}
+                    onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === lastPage}
                     className="px-3 py-1 rounded-lg border border-slate-400 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
                 >

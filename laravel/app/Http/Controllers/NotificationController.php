@@ -23,7 +23,6 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         $notifications = Notification::where('user_id', $request->user()->id)
-            ->where('is_read', false)
             ->with(['comment.user', 'comment', 'report'])
             ->orderBy('created_at', 'desc')
             ->limit(20)

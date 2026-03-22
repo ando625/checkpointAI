@@ -19,7 +19,7 @@ class MypageController extends Controller
             'data' => $mypage->items(),
             'meta' => [
                 'current_page' => $mypage->currentPage(),
-                'late_page' => $mypage->lastPage(),
+                'last_page' => $mypage->lastPage(),
                 'total' => $mypage->total(),
             ],
         ]);

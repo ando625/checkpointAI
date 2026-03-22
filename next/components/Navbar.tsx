@@ -78,7 +78,7 @@ export function Navbar() {
     //ベルアイコンをクリックした時通知一覧を取得してドロップダウンを開く
     const handleBellClick = async () => {
         const res = await axios.get('/api/notifications'); // fetchからaxiosに変更
-        console.log('通知データ:', res.data); // ← 追加
+        console.log('通知データ:', res.data);
         console.log('isNotifOpen:', !isNotifOpen);  
         setNotifications(res.data); // axiosはres.dataでデータが取れる
         setIsNotifOpen((prev) => !prev);
@@ -89,7 +89,7 @@ export function Navbar() {
     const handleNotifClick = async (notif: Notification) => {
         await axios.put(`/api/notifications/${notif.id}/read`); // fetchからaxiosに変更
 
-        setNotifications((prev) => prev.filter((n) => n.id !== notif.id));
+        setNotifications((prev) => prev.map((n) => (n.id === notif.id ? {...n, is_read:true} : n)));
         setUnreadCount((prev) => Math.max(0, prev - 1));
         setIsNotifOpen(false);
         window.location.href = `/dashboard?report_id=${notif.report_id}`;

@@ -85,7 +85,6 @@ export default function MyPage() {
                             lastPage={meta.last_page}
                             total={meta.total}
                             onPageChange={(page) => fetchMyReports(page)}
-                        // ↑ fetchReports ではなく fetchMyReports を使う
                         />)}
                 </div>
             </main>
