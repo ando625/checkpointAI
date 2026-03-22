@@ -124,6 +124,8 @@ AIが判定した状況（順調・要確認・リスクあり）に応じて、
 8. **ページネーション**
 報告書が増えても快適に閲覧できるよう、一覧表示にページネーションを実装しています。
 
+機能要件：https://docs.google.com/spreadsheets/d/1DTRqEVQvEwA02As2Awfg9wv-ecgeEGetrDaqXLCTJsw/edit?usp=sharing
+
 ---
 
 ## 使用技術
