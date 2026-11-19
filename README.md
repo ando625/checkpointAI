@@ -189,7 +189,7 @@ AIが判定した状況（順調・要確認・リスクあり）に応じて、
 - Tailwind CSS
 - React Hooks (useState, useEffect)
 - Laravel 13
-- PHP 8.4
+- PHP 8.5
 - Laravel Sanctum
 - REST API (JSON)
 - MySQL
@@ -487,6 +487,17 @@ Laravel 12 から Laravel 13 に更新し、PHP の下限を 8.4 にしました
 - 期限の出典: [PHP Supported Versions](https://www.php.net/supported-versions.php) / [Laravel Release Notes](https://laravel.com/docs/13.x/releases)
 - `composer audit` で検出された脆弱性は、更新前の53件から0件になりました
 - `laravel-lang` のパッケージは、日本語のエラーメッセージを出すために使っています。2026年5月にサプライチェーン攻撃を受けたため、更新はせず、攻撃より前の版（`composer.lock` に記録済み）のまま使っています
+
+### PHP 8.5 への更新（2026年11月）
+
+PHP 8.4 のバグ修正が 2026-12-31 で終わるため、PHP 8.5 に更新しました（Docker・composer.json・CI）。
+
+| 対象 | 変更前 | 変更後 | バグ修正の期限 | セキュリティ修正の期限 |
+|---|---|---|---|---|
+| PHP | 8.4 | 8.5 | 2027-12-31 | 2029-12-31 |
+
+- 期限の出典: [PHP Supported Versions](https://www.php.net/supported-versions.php)
+- Laravel 13 は PHP 8.3〜8.5 に対応しています（[Laravel Release Notes](https://laravel.com/docs/13.x/releases)）
 
 ### 脆弱性チェックの方法
 
