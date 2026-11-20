@@ -144,6 +144,8 @@ URLに含まれるパラメーターと、Laravelのプログラム（Controller
 
 ## システム連携図（AI分析の流れ）
 
+Gemini は **Interactions API**（`POST /v1beta/interactions`）で呼んでいます（`python/gemini_client.py`）。モデルは `gemini-3.5-flash-lite` で、環境変数 `GEMINI_MODEL` で変えられます。新しい形式（`AQ.` で始まる）の API キーでは、以前の `generateContent` が 404 になるためです。マニュアル検索（RAG）は、関係する箇所を探す所までは LlamaIndex と HuggingFace の埋め込みで手元で行い、答えの文章だけを Interactions API で作ります。
+
 ### 報告投稿時の「ロジック」
 
 | ステップ | 担当 | 役割 |
