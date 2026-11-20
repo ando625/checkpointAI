@@ -2,22 +2,20 @@
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-import google.generativeai as genai
 import os
 import json
 import re
 from typing import Literal
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
-from llama_index.llms.gemini import Gemini
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from gemini_client import generate_text  # Gemini の Interactions API を呼ぶ共通の窓口
 
 # --- 追加：LlamaIndex の初期設定 ---
 # AIの脳（LLM）と、文字をベクトル化するエンジン（Embedding）を設定
 
-Settings.llm = Gemini(
-    model_name="models/gemini-2.5-flash", 
-    api_key=os.environ["GEMINI_API_KEY"]
-)
+# 答えの文章は gemini_client.py（Interactions API）で作るので、LlamaIndex には AI の脳を持たせない。
+# LlamaIndex は「マニュアルから関係する所を探す」ことだけに使う。
+Settings.llm = None
 
 # AIの「理解力（Embedding）」を設定
 # GoogleのAPIを通さず、自分のPC内で計算する方式（HuggingFace）に
@@ -42,15 +40,12 @@ def get_query_engine():
         # 読み取った内容を元に、AI専用の「索引」を作ります
         index = VectorStoreIndex.from_documents(documents)
     
-    # AIが質問に答えるための「窓口（エンジン）」を返します
-    return index.as_query_engine()
+    # 質問に近い箇所を3つ探す「検索係（retriever）」を返します
+    return index.as_retriever(similarity_top_k=3)
 
 
 app = FastAPI(title="CheckPoint AI Service")
 
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-
-model = genai.GenerativeModel("gemini-2.5-flash")
 
 
 # -------------------------
@@ -211,9 +206,8 @@ async def analyze(req: AnalyzeRequest):
     # Gemini呼び出し
     try:
         # Geminiに文書を送る
-        response = model.generate_content(prompt)
         # stripで空白を削除してAIの返答を取得
-        raw = response.text.strip()
+        raw = generate_text(prompt).strip()
 
         # Markdownコードブロックが混入した場合に除去 JSON形式から配列の方へ
         raw = re.sub(r"^```(?:json)?\s*", "", raw)
@@ -301,8 +295,7 @@ async def insights(req: InsightsRequest):
     )
 
     try:
-        response = model.generate_content(prompt)
-        raw = response.text.strip()
+        raw = generate_text(prompt).strip()
 
         # /analyze と同じMarkdown除去処理
         raw = re.sub(r"^```(?:json)?\s*", "", raw)
@@ -385,11 +378,18 @@ async def ask_manual(req: AnalyzeRequest):
         if engine is None:
             return AskManualResponse(answer="マニュアルファイルが ./data フォルダに見つかりませんでした。")
         
-        # AIに「マニュアルに基づいて答えて」
-        response = engine.query(f"社内マニュアルに基づいて日本語で回答してください: {req.content}")
-        
-        # AIの答えを返す
-        return AskManualResponse(answer=str(response))
+        # マニュアルから質問に関係する箇所を探す（自分のコンテナの中で計算）
+        nodes = engine.retrieve(req.content)
+        context = "\n\n---\n\n".join(n.node.get_content() for n in nodes)
+
+        # 探した箇所だけを渡して、AIに日本語で答えてもらう
+        prompt = (
+            "あなたは社内マニュアルに詳しいアシスタントです。\n"
+            "次の【マニュアルの抜粋】だけを根拠に、【質問】に日本語で答えてください。\n"
+            "抜粋に書かれていないことは「マニュアルに記載がありません」と答えてください。\n\n"
+            f"【マニュアルの抜粋】\n{context}\n\n【質問】\n{req.content}"
+        )
+        return AskManualResponse(answer=generate_text(prompt))
         
     except Exception as e:
         # 何かエラーが起きたら、サーバーを止めずにエラー内容を表示
